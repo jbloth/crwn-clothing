@@ -13,6 +13,30 @@ const config = {
   measurementId: 'G-ZLHG3QDJGQ'
 };
 
+// Speicher User in DB
+export const createUserProfileDocument = async (userAuth, additionalData) => {
+  if (!userAuth) return; // Wenn kein user eingeloggt ist (dann ist userAuth null)
+
+  // reference ist nur eine Referenz auf den Ort in der DB
+  const userRef = firestore.doc(`users/${userAuth.uid}`);
+  // snapShot ist aktueller Zustand des Documents (?). Mit data kommt man an die
+  // eigentlichen Daten.
+  const snapShot = await userRef.get();
+
+  if (!snapShot.exists) {
+    // snapshot ist leer -> mach neu
+    const { displayName, email } = userAuth;
+    const createdAt = new Date();
+
+    try {
+      await userRef.set({ displayName, email, createdAt, ...additionalData });
+    } catch (error) {
+      console.log('error creating user');
+    }
+  }
+  return userRef;
+};
+
 firebase.initializeApp(config);
 
 export const auth = firebase.auth();
@@ -22,13 +46,5 @@ const provider = new firebase.auth.GoogleAuthProvider();
 // Verwendet Google-Account-Auswahl-Popup für auth (?)
 provider.setCustomParameters({ prompt: 'select_account' });
 export const signInWithGoogle = () => auth.signInWithPopup(provider);
-
-// export const signOut = async () => {
-//   try {
-//     await auth.signOut();
-//   } catch (err) {
-//     console.log(err);
-//   }
-// };
 
 export default firebase;
