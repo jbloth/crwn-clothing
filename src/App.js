@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import './App.css';
@@ -53,12 +53,22 @@ class App extends React.Component {
         <Switch>
           <Route exact path="/" component={HomePage} />
           <Route path="/shop" component={ShopPage} />
-          <Route path="/signin" component={SignInAndSignUpPage} />
+          <Route
+            exact
+            path="/signin"
+            render={() => (this.props.currentUser ? <Redirect to="/" /> : <SignInAndSignUpPage />)}
+          />
         </Switch>
       </div>
     );
   }
 }
+
+// Brauchen wir um im router einen redirect einzurichten falls eingeloggter user ist
+// die signin-route aufrufen will
+const mapStateToProps = ({ user }) => ({
+  currentUser: user.currentUser
+});
 
 // Wird gebraucht, damit Komponent actions dispatchen kann?
 const mapDispatchToProps = dispatch => ({
@@ -69,4 +79,4 @@ const mapDispatchToProps = dispatch => ({
 // Der zweite Parameter ist optional und auch eine Funktion. Sie ermöglicht Komponentet
 // bestimmte Actions zu dispatchen und zwar über function creators die dann in den props
 // zu finden sind.
-export default connect(null, mapDispatchToProps)(App);
+export default connect(mapStateToProps, mapDispatchToProps)(App);
