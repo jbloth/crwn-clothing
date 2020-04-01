@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+// Higher order component that gives us access to redux-reducers (?)
+import { connect } from 'react-redux';
 import { auth } from '../../firebase/firebase.utils';
 
 // ReactCompnent packt svg automatisch in Component
@@ -31,4 +33,11 @@ const Header = ({ currentUser }) => (
   </div>
 );
 
-export default Header;
+// state ist root reducer
+const mapStateToProps = state => ({
+  currentUser: state.user.currentUser
+});
+
+// Gibt Header Komponente Zugriff zu Funktion die Zugriff zu einem Reducer hat.
+// currentUser ist jetzt unter props.currentUser zu finden
+export default connect(mapStateToProps)(Header);
