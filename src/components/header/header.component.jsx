@@ -2,9 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 // Higher order component that gives us access to redux-reducers (?)
 import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
+
 import { auth } from '../../firebase/firebase.utils';
 import CartIcon from '../cart-icon/cart-icon.component';
 import CartDropdown from '../cart-dropdown/cart-dropdown.component';
+
+import { selectCartHidden } from '../../redux/cart/cart.selectors';
+import { selectCurrentUser } from '../../redux/user/user.selectors';
 
 // ReactCompnent packt svg automatisch in Component
 import { ReactComponent as Logo } from '../../assets/crown.svg';
@@ -38,9 +43,9 @@ const Header = ({ currentUser, hidden }) => (
 );
 
 // parameter state ist root reducer, wird hier in zwei leveln destructured
-const mapStateToProps = ({ user: { currentUser }, cart: { hidden } }) => ({
-  currentUser,
-  hidden
+const mapStateToProps = createStructuredSelector({
+  currentUser: selectCurrentUser,
+  hidden: selectCartHidden
 });
 
 // Gibt Header Komponente Zugriff zu Funktion die Zugriff zu einem Reducer hat.
