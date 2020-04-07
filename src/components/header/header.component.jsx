@@ -17,9 +17,12 @@ import './header.styles.scss';
 
 const Header = ({ currentUser, hidden }) => (
   <div className="header">
-    <Link to="logo-container">
-      <Logo className="logo" />
-    </Link>
+    <div className="logo-container">
+      <Link to="/">
+        <Logo className="logo" />
+      </Link>
+    </div>
+
     <div className="options">
       <Link className="option" to="/shop">
         SHOP
@@ -45,7 +48,7 @@ const Header = ({ currentUser, hidden }) => (
 // parameter state ist root reducer, wird hier in zwei leveln destructured
 const mapStateToProps = createStructuredSelector({
   currentUser: selectCurrentUser,
-  hidden: selectCartHidden
+  hidden: selectCartHidden,
 });
 
 // Gibt Header Komponente Zugriff zu Funktion die Zugriff zu einem Reducer hat.
