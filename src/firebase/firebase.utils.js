@@ -10,7 +10,7 @@ const config = {
   storageBucket: 'crwndb-6a3fa.appspot.com',
   messagingSenderId: '245194449358',
   appId: '1:245194449358:web:e99a2f1832a8518fa10b9f',
-  measurementId: 'G-ZLHG3QDJGQ'
+  measurementId: 'G-ZLHG3QDJGQ',
 };
 
 // Speicher User in DB
@@ -23,6 +23,7 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
   // eigentlichen Daten.
   const snapShot = await userRef.get();
 
+  // Wenn es den User noch nicht in der DB gibt, bitte anlegen
   if (!snapShot.exists) {
     // snapshot ist leer -> mach neu
     const { displayName, email } = userAuth;
@@ -35,6 +36,47 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
     }
   }
   return userRef;
+};
+
+export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
+  // Wir müssen keine Reference anlegen, firestore gibt immer irgendwas zurück
+  const collectionRef = firestore.collection(collectionKey);
+
+  // atomic operation die mehrer writes am Stück macht und dabei race conditions
+  // vermeidet
+  const batch = firestore.batch();
+  objectsToAdd.forEach((obj) => {
+    // Macht eine Referenz für Document mit zufällig generierter ID
+    const newDocRef = collectionRef.doc();
+
+    // Wirft die set-operation auf den batch
+    batch.set(newDocRef, obj);
+  });
+
+  // feuert batch ab
+  return await batch.commit();
+};
+
+// Bring collections aus db in das Format das wir für unseren state gewählt haben
+export const convertCollectionsSnapshotToMap = (collections) => {
+  // Mach ein array aus collections und speichere für jede collection die id und die route
+  const transformedCollection = collections.docs.map((doc) => {
+    const { title, items } = doc.data();
+
+    return {
+      // encodeURI sanitized strings für verwendung als URL
+      routeName: encodeURI(title.toLowerCase()),
+      id: doc.id, // Die id des Documents selbst, d.h. nicht aus doc.data()
+      title,
+      items,
+    };
+  });
+
+  // Mach ein map aus dem array
+  return transformedCollection.reduce((accumulator, collection) => {
+    accumulator[collection.title.toLowerCase()] = collection;
+    return accumulator;
+  }, {}); // Anfangswert für reduce ist leeres Objekt
 };
 
 firebase.initializeApp(config);

@@ -9,35 +9,48 @@ import SignInAndSignUpPage from './pages/sign-in-and-sign-up/sign-in-and-sign-up
 import CheckoutPage from './pages/checkout/checkout.component';
 
 import Header from './components/header/header.component';
-import { auth, createUserProfileDocument } from './firebase/firebase.utils';
+import {
+  auth,
+  createUserProfileDocument,
+  // addCollectionAndDocuments,
+} from './firebase/firebase.utils';
 import { setCurrentUser } from './redux/user/user.actions';
 import { selectCurrentUser } from './redux/user/user.selectors';
+// import { selectCollectionsForPreview } from './redux/shop/shop.selectors';
 
 class App extends React.Component {
   unsuscribeFromAuth = null;
 
   componentDidMount() {
+    // const { setCurrentUser, collectionsArray } = this.props; // nur zum einmaligen speichern von shop data in db
     const { setCurrentUser } = this.props;
 
     // Setzt Listener und returned Funktion die man braucht um den Listener wieder
     // zu entfernen
-    this.unsuscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
+    this.unsuscribeFromAuth = auth.onAuthStateChanged(async (userAuth) => {
       if (userAuth) {
+        // wenn sich jemand eingeloggt hat:
         // Speichere user in DB, wenn es ihn noch nicht gibt
         const userRef = await createUserProfileDocument(userAuth);
 
         // Speichere user im state
         // Eine Art Listener der bei Änderung am Document feuert. Gibt Snapshot des Documents
         // zurück. Ersteres brauchen wir in diesem Fall nicht, aber letzteres.
-        userRef.onSnapshot(snapshot => {
+        // Das Snapshot event wird auch beim setzten des listeners gefeuert und ab dann bei
+        // Änderungen
+        userRef.onSnapshot((snapshot) => {
           setCurrentUser({
             id: snapshot.id,
-            ...snapshot.data()
+            ...snapshot.data(),
           });
         });
       }
       // Speichere user im state auch wenn er nicht eingeloggt ist
       setCurrentUser(userAuth);
+      // addCollectionAndDocuments(
+      //   'collections',
+      //   collectionsArray.map(({ title, items }) => ({ title, items }))
+      // );
     });
   }
 
@@ -71,12 +84,13 @@ class App extends React.Component {
 // Brauchen wir um im router einen redirect einzurichten falls eingeloggter user ist
 // die signin-route aufrufen will
 const mapStateToProps = createStructuredSelector({
-  currentUser: selectCurrentUser
+  currentUser: selectCurrentUser,
+  // collectionsArray: selectCollectionsForPreview,
 });
 
 // Wird gebraucht, damit Komponent actions dispatchen kann?
-const mapDispatchToProps = dispatch => ({
-  setCurrentUser: user => dispatch(setCurrentUser(user))
+const mapDispatchToProps = (dispatch) => ({
+  setCurrentUser: (user) => dispatch(setCurrentUser(user)),
 });
 
 // Der erste Parameter ist mapStateToProps, aber das brauchen wir hier nicht, also null.
