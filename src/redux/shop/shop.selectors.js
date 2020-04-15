@@ -16,3 +16,8 @@ export const selectCollection = (collectionUrlParam) =>
   createSelector([selectCollections], (collections) =>
     collections ? collections[collectionUrlParam] : null
   );
+
+export const selectIsCollectionFetching = createSelector([selectShop], (shop) => shop.isFetching);
+
+// Double bang (!!) konvertiert falsy value nach false
+export const selectIsCollectionLoaded = createSelector([selectShop], (shop) => !!shop.collections);
