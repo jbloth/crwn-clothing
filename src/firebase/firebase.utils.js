@@ -13,6 +13,8 @@ const config = {
   measurementId: 'G-ZLHG3QDJGQ',
 };
 
+firebase.initializeApp(config);
+
 // Speicher User in DB
 export const createUserProfileDocument = async (userAuth, additionalData) => {
   if (!userAuth) return; // Wenn kein user eingeloggt ist (dann ist userAuth null)
@@ -79,14 +81,26 @@ export const convertCollectionsSnapshotToMap = (collections) => {
   }, {}); // Anfangswert für reduce ist leeres Objekt
 };
 
-firebase.initializeApp(config);
+// Wir gucken nur kurz obe es einen eingeloggten User gibt und dann melden wir uns
+// sofort wieder ab (Wir simulieren eine Situation in der wir nicht firebase für
+// Authentifikation benutzen)
+export const getCurrentUser = () => {
+  return new Promise((resolve, reject) => {
+    // onAuthStateChanged bekommt zwei Parameter: Was mache ich wenns geklappt hat?
+    // und was mache ich wenn nicht?
+    const unsubscribe = auth.onAuthStateChanged((userAuth) => {
+      unsubscribe();
+      resolve(userAuth);
+    }, reject);
+  });
+};
 
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
 
-const provider = new firebase.auth.GoogleAuthProvider();
+export const googleProvider = new firebase.auth.GoogleAuthProvider();
 // Verwendet Google-Account-Auswahl-Popup für auth (?)
-provider.setCustomParameters({ prompt: 'select_account' });
-export const signInWithGoogle = () => auth.signInWithPopup(provider);
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+export const signInWithGoogle = () => auth.signInWithPopup(googleProvider);
 
 export default firebase;

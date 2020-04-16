@@ -37,7 +37,6 @@ const googleSignInStyles = css`
 
 const getButtonStyles = (props) => {
   if (props.isGoogleSignIn) {
-    console.log('isGoogleSignIn');
     return googleSignInStyles;
   }
 
